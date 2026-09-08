@@ -4,6 +4,13 @@
         <p class="mt-1 text-sm text-muted-foreground">Search, sort, and browse your orders.</p>
     </div>
 
+    @if (session('orders-status'))
+        <p role="status" class="text-sm text-muted-foreground">{{ session('orders-status') }}</p>
+    @endif
+    @error('selected')
+        <p role="alert" class="text-sm text-destructive">{{ $message }}</p>
+    @enderror
+
     <div wire:key="{{ $id }}-{{ $this->tableRevision }}">
     <april:data-table
         id="{{ $id }}"
@@ -17,6 +24,14 @@
         @query-change="$wire.updateTable($event.detail)"
         @selection-change="$wire.updateSelection($event.detail.selected)"
     >
+        <slot:toolbar>
+            <div x-show="selected.length > 0" x-cloak class="flex shrink-0 items-center gap-3">
+                <span class="text-sm text-muted-foreground" x-text="selected.length + ' selected'"></span>
+                <april:button size="sm" wire:click="markSelectedAsShipped" wire:loading.attr="disabled">
+                    Mark as shipped
+                </april:button>
+            </div>
+        </slot:toolbar>
         <slot:cell-status>
             <april:badge variant="secondary" class="capitalize" x-text="row.status" />
         </slot:cell-status>

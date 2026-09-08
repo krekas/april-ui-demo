@@ -3,7 +3,9 @@
 namespace App\Livewire;
 
 use App\Models\Order;
+use App\OrderStatus;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Livewire\Attributes\Title;
 use Yungifez\AprilUI\Livewire\Columns\Column;
@@ -48,6 +50,32 @@ class OrdersTable extends DataTableComponent
     public function closeOrder(): void
     {
         $this->viewedOrder = null;
+    }
+
+    public function markSelectedAsShipped(): void
+    {
+        abort_unless(auth()->check(), 403);
+
+        $this->validate([
+            'selected' => ['required', 'array', Rule::exists(Order::class, 'id')],
+            'selected.*' => ['integer'],
+        ]);
+
+        Order::query()->whereKey($this->selected)->update(['status' => OrderStatus::Shipped]);
+
+        $this->viewedOrder?->refresh();
+        $this->selected = [];
+        $this->tableRevision++;
+
+        session()->flash('orders-status', 'Selected orders marked as shipped.');
+    }
+
+    public function updateTable(array $query): void
+    {
+        parent::updateTable($query);
+
+        $this->selected = [];
+        $this->resetValidation();
     }
 
     public function render(): View
