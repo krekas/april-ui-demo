@@ -25,6 +25,12 @@
                                         <span>Dashboard</span>
                                     </april:sidebar-menu-button-link>
                                 </april:sidebar-menu-item>
+                                <april:sidebar-menu-item>
+                                    <april:sidebar-menu-button-link href="{{ route('orders.index') }}" :active="request()->routeIs('orders.index')" wire:navigate>
+                                        <x-lucide-shopping-bag class="size-4" />
+                                        <span>Orders</span>
+                                    </april:sidebar-menu-button-link>
+                                </april:sidebar-menu-item>
                             </april:sidebar-menu>
                         </april:sidebar-group-content>
                     </april:sidebar-group>
