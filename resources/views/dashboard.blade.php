@@ -6,10 +6,15 @@
                 <h2 class="text-3xl font-semibold tracking-tight text-balance">A little clarity on your orders.</h2>
                 <p class="text-sm text-muted-foreground">Sales, activity, and what needs your attention.</p>
             </div>
-            <april:badge variant="outline" class="w-fit shrink-0 gap-2 py-2 tabular-nums">
-                <x-lucide-calendar-days class="size-4" />
-                {{ $start->format('M j') }} – {{ $end->format('M j, Y') }}
-            </april:badge>
+            <form method="GET" action="{{ route('dashboard') }}" class="w-full shrink-0 sm:w-auto" @date-range-apply="$el.requestSubmit()">
+                <april:date-picker
+                    mode="range"
+                    name="range"
+                    format="MMM d, yyyy"
+                    :value="['from' => $start->toDateString(), 'to' => $end->toDateString()]"
+                    class="w-full sm:w-72"
+                />
+            </form>
         </div>
 
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -19,7 +24,7 @@
             </april:card>
             <april:card>
                 <slot:title class="flex items-center justify-between text-sm font-medium text-muted-foreground">Orders <x-lucide-shopping-bag class="size-4" /></slot:title>
-                <slot:content><p class="text-3xl font-semibold tracking-tight tabular-nums">{{ number_format($orderCount) }}</p><p class="mt-2 text-xs text-muted-foreground">All orders in the last 30 days</p></slot:content>
+                <slot:content><p class="text-3xl font-semibold tracking-tight tabular-nums">{{ number_format($orderCount) }}</p><p class="mt-2 text-xs text-muted-foreground">All orders in this period</p></slot:content>
             </april:card>
             <april:card>
                 <slot:title class="flex items-center justify-between text-sm font-medium text-muted-foreground">Average order <x-lucide-chart-no-axes-combined class="size-4" /></slot:title>
@@ -47,7 +52,7 @@
 
         <div class="grid min-w-0 gap-6 lg:grid-cols-2">
             <april:chart class="dashboard-daily-chart" label="Daily order volume" type="line" :data="$dailyData" :config="['orders' => ['label' => 'Orders', 'color' => 'var(--chart-2)']]" xKey="date">
-                <slot:header><h3 class="font-semibold">Order activity</h3><p class="text-sm text-muted-foreground">Every order placed over the last 30 days.</p></slot:header>
+                <slot:header><h3 class="font-semibold">Order activity</h3><p class="text-sm text-muted-foreground">Every order placed in the selected period.</p></slot:header>
             </april:chart>
             <april:chart label="Orders by status" type="bar" :data="$statusData" :config="['orders' => ['label' => 'Orders', 'color' => 'var(--chart-3)']]" xKey="status">
                 <slot:header><h3 class="font-semibold">Orders by status</h3><p class="text-sm text-muted-foreground">Where this period’s orders stand today.</p></slot:header>

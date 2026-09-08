@@ -5,13 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\OrderStatus;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(Request $request): View
     {
-        $end = now();
-        $start = $end->copy()->subDays(29)->startOfDay();
+        $request->validate([
+            'range' => ['sometimes', 'array:from,to'],
+            'range.from' => ['nullable', 'required_with:range.to', 'date_format:Y-m-d', 'before_or_equal:range.to'],
+            'range.to' => ['nullable', 'required_with:range.from', 'date_format:Y-m-d', 'after_or_equal:range.from', 'before_or_equal:today'],
+        ]);
+
+        $selectedEnd = $request->date('range.to', '!Y-m-d');
+        $end = $selectedEnd?->endOfDay() ?? now();
+        $start = $request->date('range.from', '!Y-m-d')?->startOfDay()
+            ?? $end->copy()->subDays(29)->startOfDay();
         $orders = Order::query()->whereBetween('ordered_at', [$start, $end]);
         $paidStatuses = [OrderStatus::Paid->value, OrderStatus::Shipped->value];
         $revenueCents = (int) (clone $orders)->whereIn('status', $paidStatuses)->sum('total_cents');
